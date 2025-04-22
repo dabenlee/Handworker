@@ -10,7 +10,7 @@ import TimerIcon from '@mui/icons-material/Timer';
 
 /**
  * 记录表单组件
- * 用于记录新的自慰数据，包含以下功能：
+ * 用于记录新的发射数据，包含以下功能：
  * 1. 计时器功能：开始/停止计时
  * 2. 添加备注信息
  * 3. 数据导入导出功能
@@ -30,6 +30,8 @@ export const RecordForm = () => {
     const [lastPauseTime, setLastPauseTime] = useState<Date | null>(null);
     // 备注信息
     const [notes, setNotes] = useState('');
+    // 恢复计时
+    const [isResume, setIsResume] = useState(true);
 
     // 计时器效果：每秒更新已经过的时间
     useEffect(() => {
@@ -50,6 +52,49 @@ export const RecordForm = () => {
      * 开始：设置开始时间，启动计时器
      * 停止：保存记录，重置状态
      */
+    // 初始化时加载未完成会话
+    useEffect(() => {
+        const session = StorageService.getActiveSession();
+        if (session) {
+            setStartTime(session.startTime);
+            setIsRecording(true);
+            setIsPaused(session.isPaused);
+            setAccumulatedTime(session.accumulatedTime);
+            setLastPauseTime(session.lastPauseTime);
+            setNotes(session.notes);
+            
+            // 计算已过时间
+            const now = new Date();
+            const elapsed = session.isPaused 
+                ? session.lastPauseTime.getTime() - session.startTime.getTime() - session.accumulatedTime
+                : now.getTime() - session.startTime.getTime() - session.accumulatedTime;
+            setElapsedTime(Math.floor(elapsed / 1000));
+
+            setIsResume(false);
+        }
+    }, []);
+
+    // 监听 startTime 变化，当 startTime 有值时调用 saveSession()
+    useEffect(() => {
+        if (isRecording && !isResume) {
+            saveSession();
+        }
+    }, [isRecording, isPaused, notes]);
+
+    // 保存活动会话的方法
+    const saveSession = () => {
+        if (startTime) {
+            StorageService.saveActiveSession({
+                startTime,
+                accumulatedTime,
+                isPaused,
+                lastPauseTime,
+                notes
+            });
+        }
+    };
+
+    // 在相关操作中调用保存
     const handleStartStop = () => {
         if (!isRecording) {
             // 开始记录
@@ -62,6 +107,7 @@ export const RecordForm = () => {
             // 停止记录
             setIsRecording(false);
             setIsPaused(false);
+            StorageService.clearActiveSession();
             if (startTime) {
                 const endTime = new Date();
                 const totalPausedTime = accumulatedTime + (lastPauseTime ? endTime.getTime() - lastPauseTime.getTime() : 0);
@@ -186,7 +232,7 @@ export const RecordForm = () => {
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent'
                     }}>
-                    记录新的手艺活
+                    记录新的手工活
                 </Typography>
                 
                 <Box sx={{ 
@@ -230,7 +276,7 @@ export const RecordForm = () => {
                     fullWidth
                     multiline
                     rows={3}
-                    label="备注（可选）"
+                    label="备注"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     sx={{ mt: 2 }}
