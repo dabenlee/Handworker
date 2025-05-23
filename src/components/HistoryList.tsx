@@ -4,6 +4,9 @@ import { StorageService } from '../services/storage';
 import { MasturbationRecord } from '../types/record';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
+import EditIcon from '@mui/icons-material/Edit';
+import TimelapseIcon from '@mui/icons-material/Timelapse';
+import CommentIcon from '@mui/icons-material/Comment';
 
 /**
  * 历史记录列表组件
@@ -18,6 +21,7 @@ export const HistoryList = () => {
     const [records, setRecords] = useState<MasturbationRecord[]>([]);
     // 清空确认对话框的显示状态
     const [openDialog, setOpenDialog] = useState(false);
+    const [editRecord, setEditRecord] = useState<MasturbationRecord | null>(null);
 
     /**
      * 更新记录数据
@@ -68,6 +72,19 @@ export const HistoryList = () => {
         setRecords(records.filter(record => record.id !== id));
     };
 
+    const getInputValue = (date: Date) => {
+        // 转换为本地时间对象（自动应用浏览器时区）
+        const localDate = date;
+        
+        // 计算时区偏移量（分钟转小时）
+        const timezoneOffsetHours = localDate.getTimezoneOffset() / 60;
+        
+        // 生成UTC时间（手动修正时区）
+        const adjustedDate = new Date(localDate);
+        adjustedDate.setHours(adjustedDate.getHours() - timezoneOffsetHours);
+        return adjustedDate.toISOString().slice(0, 19);
+    };
+
     /**
      * 清空所有记录
      */
@@ -105,8 +122,10 @@ export const HistoryList = () => {
                     sx={{
                         backgroundColor: 'rgba(244, 67, 54, 0.1)',
                         '&:hover': {
-                            backgroundColor: 'rgba(244, 67, 54, 0.2)'
-                        }
+                            backgroundColor: 'rgba(244, 67, 54, 0.2)',
+                            transform: 'scale(1.1)'
+                        },
+                        transition: 'all 0.2s ease'
                     }}
                 >
                     <CleaningServicesIcon />
@@ -174,7 +193,7 @@ export const HistoryList = () => {
                                             px: 1.5,
                                             py: 0.5
                                         }}>
-                                            持续时间：{minutes}分{seconds}秒
+                                            <TimelapseIcon fontSize='small'/>&nbsp;{minutes}分{seconds}秒
                                         </Box>
                                         {record.notes && (
                                             <Typography 
@@ -189,7 +208,7 @@ export const HistoryList = () => {
                                                     py: 0.5
                                                 }}
                                             >
-                                                备注：{record.notes}
+                                                <CommentIcon fontSize='small'/>&nbsp;{record.notes}
                                             </Typography>
                                         )}
                                     </Typography>
@@ -210,6 +229,22 @@ export const HistoryList = () => {
                                 >
                                     <DeleteIcon />
                                 </IconButton>
+                                <IconButton
+                                    onClick={() => setEditRecord(record)}
+                                    color="primary"
+                                    size="medium"
+                                    sx={{
+                                        ml: 2,
+                                        backgroundColor: 'rgba(54, 92, 244, 0.1)',
+                                        '&:hover': {
+                                            backgroundColor: 'rgba(54, 92, 244, 0.2)',
+                                            transform: 'scale(1.1)'
+                                        },
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                >
+                                    <EditIcon />
+                                </IconButton>
                             </Paper>
                         );
                     })}
@@ -227,6 +262,66 @@ export const HistoryList = () => {
                             <Button onClick={handleClearAllRecords} color="error">
                                 确认清空
                             </Button>
+                        </DialogActions>
+                    </Dialog>
+
+
+                    <Dialog
+                        open={!!editRecord}
+                        onClose={() => setEditRecord(null)}
+                    >
+                        <DialogTitle>编辑记录</DialogTitle>
+                        <DialogContent>
+                            {/* 这里需要根据 MasturbationRecord 类型添加输入框 */}
+                            {/* 例如，如果有 startTime, duration, notes 字段 */}
+                            {editRecord && ( 
+                                <>
+                                    <Typography>
+                                        时间:
+                                        <input
+                                            type="datetime-local"
+                                            value={getInputValue(editRecord.startTime)}
+                                            step="1"
+                                            onChange={(e) => setEditRecord({...editRecord, startTime: new Date(e.target.value) })}
+                                        />
+                                    </Typography>
+                                    {/* const minutes = Math.floor(record.duration);
+                                    const seconds = Math.round((record.duration - minutes) * 60); */}
+                                    <Typography>
+                                        持续时间:
+                                        <input
+                                            type="number"
+                                            value={Math.floor(editRecord.duration)}
+                                            onChange={(e) => setEditRecord({...editRecord, duration: parseFloat(e.target.value) + (editRecord.duration - Math.floor(editRecord.duration)) })}
+                                        />
+                                        分
+                                        <input
+                                            type="number"
+                                            value={Math.round((editRecord.duration - Math.floor(editRecord.duration)) * 60)}
+                                            onChange={(e) => setEditRecord({...editRecord, duration: parseFloat(e.target.value) / 60 + Math.floor(editRecord.duration) })}
+                                        />
+                                        秒
+                                    </Typography>
+                                    <Typography>
+                                        备注:
+                                        <input
+                                            type="text"
+                                            value={editRecord.notes || ''}
+                                            onChange={(e) => setEditRecord({...editRecord, notes: e.target.value })}
+                                        />
+                                    </Typography>
+                                </>
+                            )}
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={() => setEditRecord(null)}>取消</Button>
+                            <Button onClick={() => {
+                                if (editRecord) {
+                                    StorageService.updateRecord(editRecord);
+                                    setEditRecord(null);
+                                    updateData();
+                                }
+                            }}>确定</Button>
                         </DialogActions>
                     </Dialog>
                 </Box>

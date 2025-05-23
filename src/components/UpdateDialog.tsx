@@ -9,6 +9,14 @@ interface UpdateInfo {
 
 const VERSION_HISTORY: UpdateInfo[] = [
     {
+        version: 'v0.3.0',
+        date: '2025-05-23',
+        changes: [
+            '支持修改历史记录',
+            '历史记录按照时间倒序排列',
+        ]
+    },
+    {
         version: 'v0.2.0',
         date: '2025-04-22',
         changes: [

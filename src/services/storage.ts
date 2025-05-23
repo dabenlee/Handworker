@@ -45,10 +45,11 @@ export class StorageService {
     static getRecords(): MasturbationRecord[] {
         const data = localStorage.getItem(STORAGE_KEY);
         if (!data) return [];
-        return JSON.parse(data).map((record: any) => ({
+        const records = JSON.parse(data).map((record: any) => ({
             ...record,
             startTime: new Date(record.startTime)
         }));
+        return records.sort((a: MasturbationRecord, b: MasturbationRecord) => a.startTime.getTime() - b.startTime.getTime());
     }
 
     static getStats(): MasturbationStats {
@@ -129,5 +130,14 @@ export class StorageService {
 
     static clearActiveSession() {
         localStorage.removeItem(ACTIVE_SESSION_KEY);
+    }
+
+    static updateRecord(updatedRecord: MasturbationRecord): void {
+        const records = this.getRecords();
+        const index = records.findIndex(record => record.id === updatedRecord.id);
+        if (index!== -1) {
+            records[index] = updatedRecord;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        }
     }
 }
