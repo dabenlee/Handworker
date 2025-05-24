@@ -198,6 +198,11 @@ export const RecordForm = () => {
                 const success = StorageService.importData(content);
                 if (!success) {
                     alert('导入失败：数据格式不正确');
+                } else {
+                    alert('导入成功');
+                    // 触发自定义事件通知数据更新
+                    const event = new CustomEvent('masturbation_record_updated');
+                    window.dispatchEvent(event);
                 }
             }
         };
