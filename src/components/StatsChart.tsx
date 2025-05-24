@@ -74,10 +74,11 @@ export const StatsChart = () => {
      * @returns 贡献度等级
      */
     const getContributionLevel = (count: number): number => {
-        if (count >= 180) return 4;
-        if (count >= 120) return 3;
-        if (count >= 60) return 2;
-        if (count >= 30) return 1;
+        if (count >= 180) return 5;
+        if (count >= 120) return 4;
+        if (count >= 60) return 3;
+        if (count >= 30) return 2;
+        if (count > 0) return 1;
         return 0;
     };
 
