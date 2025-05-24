@@ -74,11 +74,11 @@ export const StatsChart = () => {
      * @returns 贡献度等级
      */
     const getContributionLevel = (count: number): number => {
-        if (count === 0) return 0;
-        if (count === 1) return 1;
-        if (count === 2) return 2;
-        if (count === 3) return 3;
-        return 4;
+        if (count >= 180) return 4;
+        if (count >= 120) return 3;
+        if (count >= 60) return 2;
+        if (count >= 30) return 1;
+        return 0;
     };
 
     /**
@@ -115,7 +115,8 @@ export const StatsChart = () => {
                 const dayIndex = daysDiff % DAYS_IN_WEEK;
                 
                 if (weekIndex >= 0 && weekIndex < WEEKS_TO_SHOW && dayIndex >= 0 && dayIndex < DAYS_IN_WEEK) {
-                    contributionData[WEEKS_TO_SHOW - 1 - weekIndex][DAYS_IN_WEEK - 1 - dayIndex]++;
+                    // contributionData[WEEKS_TO_SHOW - 1 - weekIndex][DAYS_IN_WEEK - 1 - dayIndex]++;
+                    contributionData[WEEKS_TO_SHOW - 1 - weekIndex][DAYS_IN_WEEK - 1 - dayIndex]=contributionData[WEEKS_TO_SHOW - 1 - weekIndex][DAYS_IN_WEEK - 1 - dayIndex]+record.duration;
                 }
             }
         });
@@ -540,7 +541,7 @@ export const StatsChart = () => {
                                                         boxShadow: '0 0 4px rgba(0,0,0,0.1)'
                                                     }
                                                 }}
-                                                title={`${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日: ${count}次`}
+                                                title={`${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日: ${Math.floor(count)}分${Math.round((count - Math.floor(count)) * 60)}秒`}
                                             />
                                         );
                                     })}

@@ -140,7 +140,10 @@ export const HistoryList = () => {
                 mx: 'auto',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 2
+                gap: 2,
+                padding: 3,
+                borderRadius: 4,
+                // background: '#f8f9fa 100%',
             }}>
                 {records.slice().reverse().map(record => {
                     const minutes = Math.floor(record.duration);
@@ -154,6 +157,7 @@ export const HistoryList = () => {
                                 justifyContent: 'space-between',
                                 alignItems: 'center',
                                 p: 2.5,
+                                mx: 'auto',
                                 borderRadius: 3,
                                 background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
                                 transition: 'all 0.3s ease',
@@ -292,13 +296,14 @@ export const HistoryList = () => {
                                         <input
                                             type="number"
                                             value={Math.floor(editRecord.duration)}
-                                            onChange={(e) => setEditRecord({...editRecord, duration: parseFloat(e.target.value) + (editRecord.duration - Math.floor(editRecord.duration)) })}
+                                            onChange={(e) => setEditRecord({...editRecord, duration: parseFloat(e.target.value || "0") + (editRecord.duration - Math.floor(editRecord.duration)) })}
                                         />
                                         分
                                         <input
                                             type="number"
+                                            max={59}
                                             value={Math.round((editRecord.duration - Math.floor(editRecord.duration)) * 60)}
-                                            onChange={(e) => setEditRecord({...editRecord, duration: parseFloat(e.target.value) / 60 + Math.floor(editRecord.duration) })}
+                                            onChange={(e) => setEditRecord({...editRecord, duration: parseFloat(e.target.value || "0") / 60 + Math.floor(editRecord.duration) })}
                                         />
                                         秒
                                     </Typography>
